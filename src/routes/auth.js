@@ -3,24 +3,26 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const validate = require("../middlewares/validate");
+const { registerSchema, loginSchema } = require("../validators/auth");
 
-// REGISTRO
-router.post("/register", async (req, res) => {
+//REGISTRO
+router.post("/register", validate(registerSchema), async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // validaciones básicas
+    //validaciones basicas
     if (!name || !email || !password)
       return res.status(400).json({ error: "Datos incompletos" });
 
-    // verificar si el usuario ya existe
+    //verificar si el usuario ya existe
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ error: "Email ya registrado" });
 
-    // encriptar contraseña
+    //encriptar contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // guardar nuevo usuario
+    //guardar nuevo usuario
     const newUser = new User({ name, email, password: hashedPassword });
     await newUser.save();
 
@@ -30,20 +32,20 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// LOGIN
-router.post("/login", async (req, res) => {
+//LOGIN
+router.post("/login", validate(loginSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // buscar usuario
+    //buscar usuario
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: "Usuario no encontrado" });
 
-    // comparar contraseñas
+    //comparar contraseñas
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ error: "Contraseña incorrecta" });
 
-    // generar JWT
+    //generar JWT
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,

@@ -1,6 +1,6 @@
 const Account = require("../models/Account");
 
-// Crear cuenta
+//crear cuenta
 exports.createAccount = async (req, res) => {
   try {
     const { name, type } = req.body;
@@ -23,7 +23,7 @@ exports.createAccount = async (req, res) => {
   }
 };
 
-// Listar cuentas del usuario logueado
+//listar cuentas del usuario logueado
 exports.getAccounts = async (req, res) => {
   try {
     const accounts = await Account.find({ userId: req.user.id });
@@ -33,7 +33,7 @@ exports.getAccounts = async (req, res) => {
   }
 };
 
-// Obtener cuenta por ID
+//obtener cuenta por ID
 exports.getAccountById = async (req, res) => {
   try {
     const account = await Account.findOne({
@@ -51,7 +51,7 @@ exports.getAccountById = async (req, res) => {
   }
 };
 
-// Actualizar cuenta
+//actualizar cuenta
 exports.updateAccount = async (req, res) => {
   try {
     const { name, type } = req.body;
@@ -72,7 +72,7 @@ exports.updateAccount = async (req, res) => {
   }
 };
 
-// Eliminar cuenta
+//eliminar cuenta (no testeado)
 exports.deleteAccount = async (req, res) => {
   try {
     const account = await Account.findOneAndDelete({

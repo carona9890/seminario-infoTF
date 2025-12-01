@@ -14,7 +14,7 @@ const TransactionSchema = new mongoose.Schema({
   category: { type: String },
   description: { type: String },
 
-  // Para transferencias
+  //para transferencias
   fromAccount: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
   toAccount: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
 

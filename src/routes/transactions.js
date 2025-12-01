@@ -3,9 +3,11 @@ const router = express.Router();
 const auth = require("../middlewares/auth");
 const Account = require("../models/Account");
 const Transaction = require("../models/Transaction");
+const validate = require("../middlewares/validate");
+const { transactionSchema } = require("../validators/transactions");
 
-// Crear transacción (INCOME, EXPENSE o TRANSFER)
-router.post("/", auth, async (req, res) => {
+//crear transaccion 
+router.post("/", auth, validate(transactionSchema), async (req, res) => {
   try {
     const { accountId, type, amount, description, fromAccount, toAccount } = req.body;
 
@@ -13,8 +15,8 @@ router.post("/", auth, async (req, res) => {
       if (!fromAccount || !toAccount || !amount)
         return res.status(400).json({ error: "Datos incompletos para transferencia" });
 
-      // Debitar origen
-      const origin = await Account.findOne({ _id: fromAccount, user: req.user.id });
+      //debitar origen
+      const origin = await Account.findOne({ _id: fromAccount, userId: req.user.id });
       if (!origin) return res.status(404).json({ error: "Cuenta origen no encontrada" });
       if (origin.balance < amount)
         return res.status(400).json({ error: "Fondos insuficientes" });
@@ -22,8 +24,8 @@ router.post("/", auth, async (req, res) => {
       origin.balance -= amount;
       await origin.save();
 
-      // Acreditar destino
-      const dest = await Account.findOne({ _id: toAccount, user: req.user.id });
+      //acreditar destino
+      const dest = await Account.findOne({ _id: toAccount, userId: req.user.id });
       if (!dest) return res.status(404).json({ error: "Cuenta destino no encontrada" });
 
       dest.balance += amount;
@@ -32,8 +34,8 @@ router.post("/", auth, async (req, res) => {
       return res.json({ message: "Transferencia realizada con éxito" });
     }
 
-    // INCOME o EXPENSE
-    const account = await Account.findOne({ _id: accountId, user: req.user.id });
+    //INCOME/EXPENSE
+    const account = await Account.findOne({ _id: accountId, userId: req.user.id });
     if (!account) return res.status(404).json({ error: "Cuenta no encontrada" });
 
     const newTransaction = new Transaction({
@@ -41,12 +43,12 @@ router.post("/", auth, async (req, res) => {
       type,
       amount,
       description,
-      user: req.user.id
+      userId: req.user.id
     });
 
     await newTransaction.save();
 
-    // actualizar balance
+    //actualizar balance
     if (type === "INCOME") account.balance += amount;
     else if (type === "EXPENSE") account.balance -= amount;
 
@@ -55,14 +57,14 @@ router.post("/", auth, async (req, res) => {
     res.json({ message: "Transacción creada", transaction: newTransaction });
 
   } catch (err) {
-  console.error("ERROR en /transactions:", err);
-  res.status(500).json({ error: err.message });
+    console.error("ERROR en /transactions:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Obtener todas las transacciones del usuario
+//obtener todas las transacciones del usuario 
 router.get("/", auth, async (req, res) => {
-  const transactions = await Transaction.find({ user: req.user.id }).sort({ createdAt: -1 });
+  const transactions = await Transaction.find({ userId: req.user.id }).sort({ createdAt: -1 });
   res.json(transactions);
 });
 

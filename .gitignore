@@ -1,0 +1,25 @@
+# Node
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Env variables
+.env
+
+# Logs
+logs/
+*.log
+
+# OS generated
+.DS_Store
+
+# Temporary files
+*.swp
+*.swo
+
+# Docker
+docker-data/
+
+# Coverage / tests
+coverage/
